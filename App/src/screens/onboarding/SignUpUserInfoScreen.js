@@ -11,11 +11,25 @@ import AppColors from '../../config/colors';
 import {Picker} from '@react-native-picker/picker';
 import {Formik} from 'formik';
 import CheckBox from '@react-native-community/checkbox';
+import * as yup from 'yup';
+
+const UserDetailSchema = yup.object({
+  title: yup.string().required().min(2),
+  firstName: yup.string().required('First name cannot be empty'),
+  lastName: yup.string().required('Last name cannot be empty'),
+});
 
 const SignUpUserInfoScreen = ({navigation}) => {
   const [toggleTCCheckBox, setToggleTCCheckBox] = useState(false);
   const [togglePromotionsCheckBox, setTogglePromotionsCheckBox] =
     useState(false);
+  const [selectedTitle, setSelectedTitle] = useState('Mr.');
+
+  const initialValues = {
+    title: 'mr',
+    firstName: '',
+    lastName: '',
+  };
 
   const onPressSignUp = () => {
     navigation.navigate('DeliveryInfo');
@@ -28,72 +42,99 @@ const SignUpUserInfoScreen = ({navigation}) => {
         <Text style={styles.headerDesc}>
           Sign up or Link your Existing Account
         </Text>
-        <View style={styles.formRow}>
-          <Text style={styles.formRowHeader}>Title</Text>
-          <View style={styles.titlePicker}>
-            <Picker
-              itemStyle={styles.pickerItem}
-              /*selectedValue={selectedTitle}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={UserDetailSchema}
+          onSubmit={values => {
+            values.title = selectedTitle;
+            onPressSignUp();
+          }}>
+          {props => (
+            <View style={styles.infoContainer}>
+              <View style={styles.formRow}>
+                <Text style={styles.formRowHeader}>Title</Text>
+                <View style={styles.titlePicker}>
+                  <Picker
+                    itemStyle={styles.pickerItem}
+                    selectedValue={selectedTitle}
                     onValueChange={(itemValue, itemIndex) =>
                       setSelectedTitle(itemValue)
-                    }*/
-            >
-              <Picker.Item label="Mr." value="mr" />
-              <Picker.Item label="Mrs." value="mrs" />
-              <Picker.Item label="Ms." value="ms" />
-              <Picker.Item label="Dr." value="dr" />
-              <Picker.Item label="Rev." value="rev" />
-            </Picker>
-          </View>
-        </View>
-        <View style={styles.formRow}>
-          <Text style={styles.formRowHeader}>First Name</Text>
-          <TextInput style={styles.formInput} />
-        </View>
-        <View style={styles.formRow}>
-          <Text style={styles.formRowHeader}>Last Name</Text>
-          <TextInput style={styles.formInput} />
-        </View>
-        <View style={[styles.formRow, styles.formConditions]}>
-          <CheckBox
-            disabled={false}
-            value={toggleTCCheckBox}
-            onValueChange={newValue => setToggleTCCheckBox(newValue)}
-            tintColors={{
-              true: AppColors.primaryGreen,
-              false: AppColors.primaryGreen,
-            }}
-          />
-          <Text style={styles.finePrint}>
-            I have read and agreed to your
-            <Text style={styles.importantText}>Terms of Service</Text> and
-            <Text style={styles.importantText}>Privacy Policy</Text> and hereby
-            give consent for you to use my data in terms thereof.
-          </Text>
-        </View>
-        <View style={[styles.formRow, styles.formConditions]}>
-          <CheckBox
-            disabled={false}
-            value={togglePromotionsCheckBox}
-            onValueChange={newValue => setTogglePromotionsCheckBox(newValue)}
-            tintColors={{
-              true: AppColors.primaryGreen,
-              false: AppColors.primaryGreen,
-            }}
-          />
-          <Text style={styles.finePrint}>
-            I would like to recieve information about your products/services and
-            promotions.
-          </Text>
-        </View>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onPressSignUp}
-            style={styles.nextBtn}>
-            <Text style={styles.nextBtnText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
+                    }>
+                    <Picker.Item label="Mr." value="mr" />
+                    <Picker.Item label="Mrs." value="mrs" />
+                    <Picker.Item label="Ms." value="ms" />
+                    <Picker.Item label="Dr." value="dr" />
+                    <Picker.Item label="Rev." value="rev" />
+                  </Picker>
+                </View>
+              </View>
+              <View style={styles.formRow}>
+                <Text style={styles.formRowHeader}>First Name</Text>
+                <TextInput
+                  value={props.values.firstName}
+                  onChangeText={props.handleChange('firstName')}
+                  style={styles.formInput}
+                />
+                <Text style={styles.errorText}>
+                  {props.touched.firstName && props.errors.firstName}
+                </Text>
+              </View>
+              <View style={styles.formRow}>
+                <Text style={styles.formRowHeader}>Last Name</Text>
+                <TextInput
+                  value={props.values.lastName}
+                  onChangeText={props.handleChange('lastName')}
+                  style={styles.formInput}
+                />
+                <Text style={styles.errorText}>
+                  {props.touched.lastName && props.errors.lastName}
+                </Text>
+              </View>
+              <View style={[styles.formRow, styles.formConditions]}>
+                <CheckBox
+                  disabled={false}
+                  value={toggleTCCheckBox}
+                  onValueChange={newValue => setToggleTCCheckBox(newValue)}
+                  tintColors={{
+                    true: AppColors.primaryGreen,
+                    false: AppColors.primaryGreen,
+                  }}
+                />
+                <Text style={styles.finePrint}>
+                  I have read and agreed to your
+                  <Text style={styles.importantText}>Terms of Service</Text> and
+                  <Text style={styles.importantText}>Privacy Policy</Text> and
+                  hereby give consent for you to use my data in terms thereof.
+                </Text>
+              </View>
+              <View style={[styles.formRow, styles.formConditions]}>
+                <CheckBox
+                  disabled={false}
+                  value={togglePromotionsCheckBox}
+                  onValueChange={newValue =>
+                    setTogglePromotionsCheckBox(newValue)
+                  }
+                  tintColors={{
+                    true: AppColors.primaryGreen,
+                    false: AppColors.primaryGreen,
+                  }}
+                />
+                <Text style={styles.finePrint}>
+                  I would like to recieve information about your
+                  products/services and promotions.
+                </Text>
+              </View>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={props.handleSubmit}
+                  style={styles.nextBtn}>
+                  <Text style={styles.nextBtnText}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </Formik>
       </View>
     </ScrollView>
   );
@@ -119,8 +160,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  infoContainer: {
+    flex: 1,
+  },
+  errorText: {
+    fontSize: 12,
+    color: AppColors.crimson,
+  },
   formRow: {
-    marginVertical: 10,
+    marginVertical: 5,
     padding: 3,
   },
   formRowHeader: {

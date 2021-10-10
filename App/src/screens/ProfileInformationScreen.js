@@ -52,8 +52,8 @@ export default function ProfileInformationScreen({navigation}) {
 
 const UserSchema = yup.object({
   title: yup.string().required().min(2),
-  firstName: yup.string().required(),
-  lastName: yup.string().required(),
+  firstName: yup.string().required('First name cannot be empty'),
+  lastName: yup.string().required('Last name cannot be empty'),
   phoneNumber: yup
     .string()
     .required()
